@@ -24,7 +24,6 @@ public class MyAuthenticationSucessHandler implements AuthenticationSuccessHandl
      private ObjectMapper mapper;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        response.setContentType("application/json;charset=utf-8");
-        response.getWriter().write(mapper.writeValueAsString(authentication));
+        redirectStrategy.sendRedirect(request, response, "/index");
     }
 }

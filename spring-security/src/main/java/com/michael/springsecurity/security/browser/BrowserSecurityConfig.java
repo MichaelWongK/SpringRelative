@@ -29,12 +29,12 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
         http.formLogin() // 表单登录
                 // http.httpBasic() // HTTP Basic
                 .loginPage("/authentication/require") // 登录跳转 URL
-                .loginProcessingUrl("/spring-security/login") // 处理表单登录 URL
+                .loginProcessingUrl("/login") // 处理表单登录 URL
                 .successHandler(authenticationSucessHandler) // 处理登录成功
 //                .failureHandler(authenticationFailureHandler) // 处理登录失败
                 .and()
                 .authorizeRequests()
-                .antMatchers("/*").permitAll()
+                .antMatchers("/authentication/require", "/login.html").permitAll() // 登录跳转 URL 无需认证
                 .anyRequest()
                 .authenticated()
                 .and()
