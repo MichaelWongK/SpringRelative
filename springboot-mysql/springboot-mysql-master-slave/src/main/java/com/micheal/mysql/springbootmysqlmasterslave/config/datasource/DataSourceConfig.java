@@ -19,6 +19,8 @@ import java.util.Map;
 @Configuration
 public class DataSourceConfig {
 
+
+    // TODO: Durid连接池待补充
     @Bean
     @ConfigurationProperties("spring.datasource.master")
     public DataSource masterDataSource() {
