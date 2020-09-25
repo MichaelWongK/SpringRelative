@@ -4,7 +4,6 @@ import com.micheal.wang.demo.platform.mq.exchange.util.MQConnectionUtils;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.TimeoutException;
 
 public class CunsumerError {

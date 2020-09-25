@@ -2,6 +2,7 @@ package com.micheal.wang.demo.platform.mq.exchange.topic;
 
 import com.micheal.wang.demo.platform.mq.exchange.util.MQConnectionUtils;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.Connection;
 
 import java.io.IOException;
