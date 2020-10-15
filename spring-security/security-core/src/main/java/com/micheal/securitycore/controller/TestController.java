@@ -1,5 +1,6 @@
 package com.micheal.securitycore.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TestController {
 
+    @PreAuthorize("hasRole('user')") // 只允许user角色访问
     @GetMapping("/getUser/{username}")
     public String getUser(@PathVariable("username") String username) {
         return username;
