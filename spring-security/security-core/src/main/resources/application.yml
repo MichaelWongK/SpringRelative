@@ -1,0 +1,7 @@
+server:
+  port: 8080
+security:
+  login:
+    loginPage: /loginUp.html
+    loginSuccessUrl: /loginSuccess.html
+    loginErrorUrl: /loginError.html

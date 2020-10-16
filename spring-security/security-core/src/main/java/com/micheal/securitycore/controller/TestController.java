@@ -19,4 +19,9 @@ public class TestController {
         return username;
     }
 
+
+    @GetMapping("/loginRequire")
+    public String loginRequire() {
+        return "自定义登陆接口，表示不走认证过程";
+    }
 }

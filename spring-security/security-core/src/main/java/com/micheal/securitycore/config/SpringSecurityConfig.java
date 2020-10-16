@@ -1,9 +1,15 @@
 package com.micheal.securitycore.config;
 
+import com.micheal.securitycore.handle.security.CustomAuthenticationFailureHandler;
+import com.micheal.securitycore.handle.security.CustomAuthenticationSuccessHandler;
+import com.micheal.securitycore.properties.SecurityProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+import javax.annotation.Resource;
 
 /**
  * @author <a href="mailto:wangmk13@163.com">micheal.wang</a>
@@ -14,7 +20,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
  */
 @EnableWebSecurity
 @Configuration
-public class SpringSecurityCondig extends WebSecurityConfigurerAdapter {
+public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Resource
+    private SecurityProperties securityProperties;
+
+    @Resource
+    private FormAuthenticationConfig formAuthenticationConfig;
 
 
     /**
@@ -30,10 +42,22 @@ public class SpringSecurityCondig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.formLogin()
-            .and()
-                .authorizeRequests()
-                .antMatchers("/index", "/").permitAll()
-                .anyRequest().authenticated();
+//        http.formLogin()
+//            .and()
+//                .authorizeRequests()
+//                .antMatchers("/index", "/").permitAll()
+//                .anyRequest().authenticated();
+
+        formAuthenticationConfig.configure(http);
+
+        http.authorizeRequests()
+                .antMatchers("/index", "/", "loginRequire",
+                        securityProperties.getLogin().getLoginPage(),
+                        securityProperties.getLogin().getLoginSuccessUrl(),
+                        securityProperties.getLogin().getLoginErrorUrl()).permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .csrf().disable();
+
     }
 }

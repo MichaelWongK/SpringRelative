@@ -1,4 +1,4 @@
-package com.micheal.securitycore.config;
+package com.micheal.securitycore.security;
 
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
