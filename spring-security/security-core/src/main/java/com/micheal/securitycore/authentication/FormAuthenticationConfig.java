@@ -1,7 +1,7 @@
-package com.micheal.securitycore.config;
+package com.micheal.securitycore.authentication;
 
-import com.micheal.securitycore.handle.security.CustomAuthenticationFailureHandler;
-import com.micheal.securitycore.handle.security.CustomAuthenticationSuccessHandler;
+import com.micheal.securitycore.authentication.handler.CustomAuthenticationFailureHandler;
+import com.micheal.securitycore.authentication.handler.CustomAuthenticationSuccessHandler;
 import com.micheal.securitycore.properties.SecurityProperties;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Component;
@@ -36,7 +36,7 @@ public class FormAuthenticationConfig {
      * @param http
      * @throws Exception
      */
-    protected void configure(HttpSecurity http) throws Exception {
+    public void configure(HttpSecurity http) throws Exception {
 //        http.formLogin()
 //            .and()
 //                .authorizeRequests()

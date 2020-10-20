@@ -1,4 +1,4 @@
-package com.micheal.securitycore.handle.security;
+package com.micheal.securitycore.authentication.handler;
 
 import com.micheal.securitycore.properties.SecurityProperties;
 import lombok.extern.slf4j.Slf4j;

@@ -15,4 +15,6 @@ import org.springframework.context.annotation.Configuration;
 public class SecurityProperties {
 
     private LoginProperties login = new LoginProperties();
+
+    private SmsProperties sms = new SmsProperties();
 }

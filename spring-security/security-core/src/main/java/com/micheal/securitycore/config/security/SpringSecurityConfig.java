@@ -1,8 +1,9 @@
-package com.micheal.securitycore.config;
+package com.micheal.securitycore.config.security;
 
+import com.micheal.securitycore.authentication.FormAuthenticationConfig;
+import com.micheal.securitycore.authentication.SmsCodeAuthenticationSecurityConfig;
+import com.micheal.securitycore.authentication.sms.ValidateCodeFilter;
 import com.micheal.securitycore.constants.SecurityConstants;
-import com.micheal.securitycore.handle.security.CustomAuthenticationFailureHandler;
-import com.micheal.securitycore.handle.security.CustomAuthenticationSuccessHandler;
 import com.micheal.securitycore.properties.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
@@ -39,6 +41,12 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Resource
     private UserDetailsService userDetailsService;
 
+    @Resource
+    private SmsCodeAuthenticationSecurityConfig smsCodeAuthenticationSecurityConfig;
+
+    @Resource
+    private ValidateCodeFilter validateCodeFilter;
+
     @Bean
     protected PersistentTokenRepository persistentTokenRepository() {
         JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
@@ -67,9 +75,14 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
         formAuthenticationConfig.configure(http);
 
-        http.authorizeRequests()
+//        http.authorizeRequests()
+        http.addFilterBefore(validateCodeFilter, AbstractPreAuthenticatedProcessingFilter.class)
+                .apply(smsCodeAuthenticationSecurityConfig)
+                .and()
+                .authorizeRequests()
                 .antMatchers(SecurityConstants.DEFAULT_PAGE_URL,
                         SecurityConstants.DEFAULT_LOGIN_PAGE_URL,
+                        "/send/sms/*",
                         securityProperties.getLogin().getLoginErrorUrl()).permitAll()
                 .anyRequest().authenticated()
                 .and()

@@ -1,4 +1,4 @@
-package com.micheal.securitycore.handle.security;
+package com.micheal.securitycore.authentication.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.micheal.securitycore.properties.SecurityProperties;
@@ -39,6 +39,7 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
                                         AuthenticationException exception) throws IOException {
 
         log.info("登录失败");
+        exception.printStackTrace();
         if (StringUtils.isEmpty(securityProperties.getLogin().getLoginErrorUrl())){
 
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

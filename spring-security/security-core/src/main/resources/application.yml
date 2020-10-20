@@ -12,4 +12,17 @@ spring:
     url: jdbc:mysql://micheal.wang:3306/test?characterEncoding=utf-8&useSSL=false
     username: root
     password: mingkai13
+    type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.jdbc.Driver
+  # redis
+  redis:
+    host: www.micheal.wang
+    port: 26379
+    password: micheal13
+    lettuce:
+      pool:
+        max-active: 32
+        max-wait: -1
+        min-idle: 0
+    timeout: 120
+    database: 0
