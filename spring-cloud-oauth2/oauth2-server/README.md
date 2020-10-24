@@ -1,36 +1,21 @@
-# 基于内存存储令牌
+# 基于 RBAC 的自定义认证
 
 ## 概述
 
-本章节基于 **内存存储令牌** 的模式用于演示最基本的操作，帮助大家快速理解 oAuth2 认证服务器中 "认证"、"授权"、"访问令牌” 的基本概念
+在实际开发中，我们的用户信息都是存在数据库里的，本章节基于 [RBAC 模型](https://www.funtl.com/zh/spring-security-oauth2/RBAC-基于角色的权限控制.html) 将用户的认证信息与数据库对接，实现真正的用户认证与授权
 
 **操作流程**
 
-![img](https://www.funtl.com/assets1/Lusifer_201904030001.png)
+继续 [基于 JDBC 存储令牌](https://www.funtl.com/zh/spring-security-oauth2/基于-JDBC-存储令牌.html) 章节的代码开发
 
-- 配置认证服务器
-
-  - 配置客户端信息：
-
-    ```
-    ClientDetailsServiceConfigurer
-    ```
-
-    - `inMemory`：内存配置
-    - `withClient`：客户端标识
-    - `secret`：客户端安全码
-    - `authorizedGrantTypes`：客户端授权类型
-    - `scopes`：客户端授权范围
-    - `redirectUris`：注册回调地址
-
+- 初始化 RBAC 相关表
+- 在数据库中配置“用户”、“角色”、“权限”相关信息
+- 数据库操作使用 `tk.mybatis` 框架，故需要增加相关依赖
 - 配置 Web 安全
-
+  - 配置使用自定义认证与授权
 - 通过 GET 请求访问认证服务器获取授权码
-
   - 端点：`/oauth/authorize`
-
 - 通过 POST 请求利用授权码访问认证服务器获取令牌
-
   - 端点：`/oauth/token`
 
 **附：默认的端点 URL**
@@ -42,47 +27,301 @@
 - `/oauth/check_token`：用于资源服务访问的令牌解析端点
 - `/oauth/token_key`：提供公有密匙的端点，如果你使用 JWT 令牌的话
 
-## 配置认证服务器
+## 初始化 RBAC 相关表
 
-创建一个类继承 `AuthorizationServerConfigurerAdapter` 并添加相关注解：
+```sql
+CREATE TABLE `tb_permission` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `parent_id` bigint(20) DEFAULT NULL COMMENT '父权限',
+  `name` varchar(64) NOT NULL COMMENT '权限名称',
+  `enname` varchar(64) NOT NULL COMMENT '权限英文名称',
+  `url` varchar(255) NOT NULL COMMENT '授权路径',
+  `description` varchar(200) DEFAULT NULL COMMENT '备注',
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8 COMMENT='权限表';
+insert  into `tb_permission`(`id`,`parent_id`,`name`,`enname`,`url`,`description`,`created`,`updated`) values 
+(37,0,'系统管理','System','/',NULL,'2019-04-04 23:22:54','2019-04-04 23:22:56'),
+(38,37,'用户管理','SystemUser','/users/',NULL,'2019-04-04 23:25:31','2019-04-04 23:25:33'),
+(39,38,'查看用户','SystemUserView','',NULL,'2019-04-04 15:30:30','2019-04-04 15:30:43'),
+(40,38,'新增用户','SystemUserInsert','',NULL,'2019-04-04 15:30:31','2019-04-04 15:30:44'),
+(41,38,'编辑用户','SystemUserUpdate','',NULL,'2019-04-04 15:30:32','2019-04-04 15:30:45'),
+(42,38,'删除用户','SystemUserDelete','',NULL,'2019-04-04 15:30:48','2019-04-04 15:30:45');
 
-- `@Configuration`
-- `@EnableAuthorizationServer`
+CREATE TABLE `tb_role` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `parent_id` bigint(20) DEFAULT NULL COMMENT '父角色',
+  `name` varchar(64) NOT NULL COMMENT '角色名称',
+  `enname` varchar(64) NOT NULL COMMENT '角色英文名称',
+  `description` varchar(200) DEFAULT NULL COMMENT '备注',
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8 COMMENT='角色表';
+insert  into `tb_role`(`id`,`parent_id`,`name`,`enname`,`description`,`created`,`updated`) values 
+(37,0,'超级管理员','admin',NULL,'2019-04-04 23:22:03','2019-04-04 23:22:05');
+
+CREATE TABLE `tb_role_permission` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `role_id` bigint(20) NOT NULL COMMENT '角色 ID',
+  `permission_id` bigint(20) NOT NULL COMMENT '权限 ID',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8 COMMENT='角色权限表';
+insert  into `tb_role_permission`(`id`,`role_id`,`permission_id`) values 
+(37,37,37),
+(38,37,38),
+(39,37,39),
+(40,37,40),
+(41,37,41),
+(42,37,42);
+
+CREATE TABLE `tb_user` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL COMMENT '用户名',
+  `password` varchar(64) NOT NULL COMMENT '密码，加密存储',
+  `phone` varchar(20) DEFAULT NULL COMMENT '注册手机号',
+  `email` varchar(50) DEFAULT NULL COMMENT '注册邮箱',
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`) USING BTREE,
+  UNIQUE KEY `phone` (`phone`) USING BTREE,
+  UNIQUE KEY `email` (`email`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8 COMMENT='用户表';
+insert  into `tb_user`(`id`,`username`,`password`,`phone`,`email`,`created`,`updated`) values 
+(37,'admin','$2a$10$9ZhDOBp.sRKat4l14ygu/.LscxrMUcDAfeVOEPiYwbcRkoB09gCmi','15888888888','lee.lusifer@gmail.com','2019-04-04 23:21:27','2019-04-04 23:21:29');
+
+CREATE TABLE `tb_user_role` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NOT NULL COMMENT '用户 ID',
+  `role_id` bigint(20) NOT NULL COMMENT '角色 ID',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8 COMMENT='用户角色表';
+insert  into `tb_user_role`(`id`,`user_id`,`role_id`) values 
+(37,37,37);
+```
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+
+由于使用了 `BCryptPasswordEncoder` 的加密方式，故用户密码需要加密，代码如下：
 
 ```java
-package com.funtl.oauth2.server.config;
+System.out.println(new BCryptPasswordEncoder().encode("123456"));
+```
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 
-@Configuration
-@EnableAuthorizationServer
-public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
+
+## POM
+
+数据库操作采用 `tk.mybatis` 框架，需增加相关依赖
+
+```xml
+<dependency>
+    <groupId>tk.mybatis</groupId>
+    <artifactId>mapper-spring-boot-starter</artifactId>
+</dependency>
+```
+
+
+
+## 关键步骤
+
+由于本次增加了 MyBatis 相关操作，代码增加较多，可以参考我 [**GitHub**](https://github.com/topsale/spring-boot-samples/tree/master/spring-security-oauth2) 上的源码，下面仅列出关键步骤及代码
+
+### 获取用户信息
+
+目的是为了实现自定义认证授权时可以通过数据库查询用户信息，Spring Security oAuth2 要求使用 `username` 的方式查询，提供相关用户信息后，认证工作由框架自行完成
+
+```java
+package com.funtl.oauth2.server.service.impl;
+
+import com.funtl.oauth2.server.domain.TbUser;
+import com.funtl.oauth2.server.mapper.TbUserMapper;
+import com.funtl.oauth2.server.service.TbUserService;
+import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
+
+import javax.annotation.Resource;
+
+@Service
+public class TbUserServiceImpl implements TbUserService {
+
+    @Resource
+    private TbUserMapper tbUserMapper;
+
     @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        // 配置客户端
-        clients
-                // 使用内存设置
-                .inMemory()
-                // client_id
-                .withClient("client")
-                // client_secret
-                .secret("secret")
-                // 授权类型
-                .authorizedGrantTypes("authorization_code")
-                // 授权范围
-                .scopes("app")
-                // 注册回调地址
-                .redirectUris("http://www.funtl.com");
+    public TbUser getByUsername(String username) {
+        Example example = new Example(TbUser.class);
+        example.createCriteria().andEqualTo("username", username);
+        return tbUserMapper.selectOneByExample(example);
     }
 }
 ```
 
 
 
-## 服务器安全配置
+### 获取用户权限信息
+
+认证成功后需要给用户授权，具体的权限已经存储在数据库里了，SQL 语句如下：
+
+```sql
+SELECT
+  p.*
+FROM
+  tb_user AS u
+  LEFT JOIN tb_user_role AS ur
+    ON u.id = ur.user_id
+  LEFT JOIN tb_role AS r
+    ON r.id = ur.role_id
+  LEFT JOIN tb_role_permission AS rp
+    ON r.id = rp.role_id
+  LEFT JOIN tb_permission AS p
+    ON p.id = rp.permission_id
+WHERE u.id = <yourUserId>
+```
+
+
+
+### 自定义认证授权实现类
+
+创建一个类，实现 `UserDetailsService` 接口，代码如下：
+
+```java
+package com.funtl.oauth2.server.config.service;
+
+import com.funtl.oauth2.server.domain.TbPermission;
+import com.funtl.oauth2.server.domain.TbUser;
+import com.funtl.oauth2.server.service.TbPermissionService;
+import com.funtl.oauth2.server.service.TbUserService;
+import org.assertj.core.util.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * 自定义用户认证与授权
+ * <p>
+ * Description:
+ * </p>
+ *
+ * @author Lusifer
+ * @version v1.0.0
+ * @date 2019-04-04 23:57:04
+ * @see com.funtl.oauth2.server.config
+ */
+@Service
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+    @Autowired
+    private TbUserService tbUserService;
+
+    @Autowired
+    private TbPermissionService tbPermissionService;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // 查询用户信息
+        TbUser tbUser = tbUserService.getByUsername(username);
+        List<GrantedAuthority> grantedAuthorities = Lists.newArrayList();
+        if (tbUser != null) {
+            // 获取用户授权
+            List<TbPermission> tbPermissions = tbPermissionService.selectByUserId(tbUser.getId());
+
+            // 声明用户授权
+            tbPermissions.forEach(tbPermission -> {
+                if (tbPermission != null && tbPermission.getEnname() != null) {
+                    GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(tbPermission.getEnname());
+                    grantedAuthorities.add(grantedAuthority);
+                }
+            });
+        }
+        
+        // 由框架完成认证工作
+        return new User(tbUser.getUsername(), tbUser.getPassword(), grantedAuthorities);
+    }
+}
+```
+
+
+
+### 服务器安全配置
 
 创建一个类继承 `WebSecurityConfigurerAdapter` 并添加相关注解：
 
@@ -93,15 +332,72 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 ```java
 package com.funtl.oauth2.server.config;
 
+import com.funtl.oauth2.server.config.service.UserDetailsServiceImpl;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        // 设置默认的加密方式
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @Override
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsServiceImpl();
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // 使用自定义认证与授权
+        auth.userDetailsService(userDetailsService());
+    }
+}
+```
+
+
+
+## Application
+
+增加了 Mapper 的包扫描配置
+
+```java
+package com.funtl.oauth2;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import tk.mybatis.spring.annotation.MapperScan;
+
+/**
+ * 认证服务器，用于获取 Token
+ * <p>
+ * Description:
+ * </p>
+ *
+ * @author Lusifer
+ * @version v1.0.0
+ * @date 2019-04-01 16:06:45
+ * @see com.funtl.oauth2
+ */
+@SpringBootApplication
+@MapperScan(basePackages = "com.funtl.oauth2.server.mapper")
+public class OAuth2ServerApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(OAuth2ServerApplication.class, args);
+    }
 
 }
 ```
@@ -110,19 +406,34 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 ## application.yml
 
+增加了 MyBatis 配置
+
 ```yaml
 spring:
   application:
     name: oauth2-server
-  security:
-    user:
-      # 账号
-      name: root
-      # 密码
-      password: 123456
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: jdbc:mysql://192.168.141.128:3307/oauth2?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      idle-timeout: 600000
+      maximum-pool-size: 10
+      auto-commit: true
+      pool-name: MyHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
 
 server:
   port: 8080
+
+mybatis:
+  type-aliases-package: com.funtl.oauth2.server.domain
+  mapper-locations: classpath:mapper/*.xml
 ```
 
 
@@ -135,7 +446,7 @@ server:
 http://localhost:8080/oauth/authorize?client_id=client&response_type=code
 ```
 
-
+1
 
 第一次访问会跳转到登录页面
 
@@ -163,137 +474,7 @@ http://www.funtl.com/?code=1JuO6V
 curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'grant_type=authorization_code&code=1JuO6V' "http://client:secret@localhost:8080/oauth/token"
 ```
 
-1
 
-![img](https://www.funtl.com/assets1/Lusifer_20190402232952.png)
-
-**注意：此时无法请求到令牌，访问服务器会报错 `There is no PasswordEncoder mapped for the id`**
-
-
-
-# There is no PasswordEncoder mapped
-
-## 问题描述
-
-按照 基于内存存储令牌 配置成功后，携授权码使用 POST 请求认证服务器时，服务器返回错误信息
-
-**版本**
-
-- Spring Boot: 2.1.3.RELEASE
-- Spring Security: 5.1.4.RELEASE
-
-**日志**
-
-```text
-java.lang.IllegalArgumentException: There is no PasswordEncoder mapped for the id "null"
-```
-
-
-
-## 解决方案
-
-Spring Security 5.0 之前版本的 `PasswordEncoder` 接口默认实现为 `NoOpPasswordEncoder` 此时是可以使用明文密码的，在 5.0 之后默认实现类改为 `DelegatingPasswordEncoder` 此时密码必须以加密形式存储。
-
-### application.yml
-
-删除 `spring.security` 相关配置，修改为
-
-```yaml
-spring:
-  application:
-    name: oauth2-server
-
-server:
-  port: 8080
-```
-
-
-
-### WebSecurityConfiguration
-
-```java
-package com.funtl.oauth2.server.config;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-@Configuration
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
-public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
-
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        // 设置默认的加密方式
-        return new BCryptPasswordEncoder();
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-
-        auth.inMemoryAuthentication()
-                // 在内存中创建用户并为密码加密
-                .withUser("user").password(passwordEncoder().encode("123456")).roles("USER")
-                .and()
-                .withUser("admin").password(passwordEncoder().encode("123456")).roles("ADMIN");
-
-    }
-}
-```
-
-
-
-### [#](https://www.funtl.com/zh/spring-security-oauth2/PasswordEncoder.html#authorizationserverconfiguration)AuthorizationServerConfiguration
-
-```java
-package com.funtl.oauth2.server.config;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-
-@Configuration
-@EnableAuthorizationServer
-public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
-
-    // 注入 WebSecurityConfiguration 中配置的 BCryptPasswordEncoder
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients
-                .inMemory()
-                .withClient("client")
-                // 还需要为 secret 加密
-                .secret(passwordEncoder.encode("secret"))
-                .authorizedGrantTypes("authorization_code")
-                .scopes("app")
-                .redirectUris("http://www.funtl.com");
-
-    }
-}
-```
-
-
-
-## 测试访问
-
-通过 CURL 或是 Postman 请求
-
-```bash
-curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'grant_type=authorization_code&code=1JuO6V' "http://client:secret@localhost:8080/oauth/token"
-```
-
-1
 
 ![img](https://www.funtl.com/assets1/Lusifer_20190402232952.png)
 
@@ -307,3 +488,9 @@ curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'grant_type
     "scope": "app"
 }
 ```
+
+
+
+操作成功后数据库 `oauth_access_token` 表中会增加一笔记录，效果图如下：
+
+![img](https://www.funtl.com/assets1/Lusifer_20190403150529.png)

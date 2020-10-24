@@ -1,9 +1,11 @@
 package com.security.oauth2server;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
+@MapperScan(basePackages = "com.security.oauth2server.**.mapper")
 public class Oauth2ServerApplication {
 
 	public static void main(String[] args) {
