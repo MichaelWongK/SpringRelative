@@ -17,6 +17,7 @@
 	<modules>
 		<module>springboot-dependencies</module>
 		<module>oauth2-server</module>
+		<module>oauth2-resource</module>
 	</modules>
 
 	<licenses>
