@@ -30,14 +30,11 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-//    @Bean
-//    @Override
-//    public AuthenticationManager authenticationManagerBean() throws Exception {
-//        return super.authenticationManagerBean();
-//    }
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // 在内存中创建用户并为密码加密
         auth.inMemoryAuthentication()
                 .withUser("admin").password(passwordEncoder().encode("123456")).roles("ADMIN")
                 .and()
@@ -45,18 +42,5 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     }
 
-//    @Override
-//    public void configure(HttpSecurity http) throws Exception {
-//        http.csrf()
-//                .disable()
-//                .authorizeRequests()
-//                .antMatchers("/oauth/**", "/login/**", "/logout/**")
-//                .permitAll()
-//                .anyRequest()
-//                .authenticated()
-//                .and()
-//                .formLogin()
-//                .permitAll();
-//    }
 
 }
