@@ -19,6 +19,11 @@ public class JwtTokenStoreConfig {
         return new JwtTokenStore(jwtAccessTokenConverter());
     }
 
+    /**
+     * 用于生成jwt
+     *
+     * @return JwtAccessTokenConverter
+     */
     @Bean
     public JwtAccessTokenConverter jwtAccessTokenConverter() {
         JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
@@ -26,6 +31,11 @@ public class JwtTokenStoreConfig {
         return accessTokenConverter;
     }
 
+    /**
+     * 用于扩展JWT
+     *
+     * @return JwtTokenEnhancer
+     */
     @Bean
     public JwtTokenEnhancer jwtTokenEnhancer() {
         return new JwtTokenEnhancer();
