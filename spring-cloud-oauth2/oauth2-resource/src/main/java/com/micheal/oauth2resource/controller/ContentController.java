@@ -5,6 +5,7 @@ import com.micheal.oauth2resource.dto.ResponseResult;
 import com.micheal.oauth2resource.service.TbContentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +23,7 @@ public class ContentController {
     private TbContentService tbContentService;
 
     @RequestMapping("/")
+    @PreAuthorize("hasAuthority('SystemContent')")
     public ResponseResult<List<TbContent>> list() {
         return new ResponseResult(HttpStatus.OK.value(), HttpStatus.OK.toString(), tbContentService.list());
     }
