@@ -72,6 +72,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     private UserDetailsService userDetailsService;
 
     /**
+     * 令牌端点配置 关联 org.springframework.security.oauth2.provider.endpoint.TokenEndpoint
      * 使用密码模式需要配置
      */
     @Override
