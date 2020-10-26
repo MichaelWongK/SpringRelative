@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -42,15 +43,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         return DataSourceBuilder.create().build();
     }
 
-    /**
-     * 配置令牌存储方式：TokenStore -> JdbcTokenStore
-     * 基于 JDBC 实现，令牌保存到数据
-     * @return
-     */
-//    @Bean
-//    public TokenStore tokenStore() {
-//        return new JdbcTokenStore(dataSource());
-//    }
 
     @Autowired
     private TokenStore tokenStore;
@@ -72,13 +64,23 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     private AuthenticationManager authenticationManager;
 
     /**
+     * 使用refresh_token进行令牌刷新时，需要对ouath2认证服务器指定userDetailsService，
+     * 否则TokenEndpoint类会报 Handling error: IllegalStateException, UserDetailsService is required.
+     * /oauth/token?grant_type=refresh_token&refresh_token=9858247f-bab1-47a5-994b-aaa78f768bec
+     */
+    @Autowired
+    private UserDetailsService userDetailsService;
+
+    /**
      * 使用密码模式需要配置
      */
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         // 设置令牌
-        endpoints.tokenStore(tokenStore);
-        endpoints.authenticationManager(authenticationManager); // 密码模式必须要配置这个
+        endpoints
+                .tokenStore(tokenStore)
+                .authenticationManager(authenticationManager)
+                .userDetailsService(userDetailsService); // 密码模式必须要配置这个
     }
 
     /**
