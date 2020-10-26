@@ -1,6 +1,7 @@
 package com.security.oauth2server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -46,10 +47,13 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
      * 基于 JDBC 实现，令牌保存到数据
      * @return
      */
-    @Bean
-    public TokenStore tokenStore() {
-        return new JdbcTokenStore(dataSource());
-    }
+//    @Bean
+//    public TokenStore tokenStore() {
+//        return new JdbcTokenStore(dataSource());
+//    }
+
+    @Autowired
+    private TokenStore tokenStore;
 
     /**
      * 配置客户端读取方式：ClientDetailsService -> JdbcClientDetailsService
@@ -73,7 +77,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         // 设置令牌
-        endpoints.tokenStore(tokenStore());
+        endpoints.tokenStore(tokenStore);
         endpoints.authenticationManager(authenticationManager); // 密码模式必须要配置这个
     }
 

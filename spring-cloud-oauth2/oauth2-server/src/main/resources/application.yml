@@ -16,7 +16,18 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
       connection-test-query: SELECT 1
-
+  # redis
+  redis:
+    host: www.micheal.wang
+    port: 26379
+    password: micheal13
+    lettuce:
+      pool:
+        max-active: 32
+        max-wait: -1
+        min-idle: 0
+    timeout: 120
+    database: 2
 server:
   port: 8080
 mybatis-plus:
