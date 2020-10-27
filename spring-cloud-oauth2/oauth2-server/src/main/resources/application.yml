@@ -35,7 +35,6 @@ mybatis-plus:
   type-aliases-package: com.security.oauth2server.domain
 security:
   tokenStore:
-    jwtTokenStoreEnable: false
+    jwtTokenStoreEnable: true
     redisTokenStoreEnable: false
-    urlTest: abcdefg
 

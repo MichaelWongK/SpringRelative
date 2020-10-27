@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
-import org.springframework.security.oauth2.provider.token.store.jwk.JwkTokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
 
 import javax.sql.DataSource;
@@ -26,6 +26,9 @@ public class TokenStoreConfig {
     private SecurityProperties securityProperties;
 
     @Autowired
+    private JwtAccessTokenConverter jwtAccessTokenConverter;
+
+    @Autowired
     private RedisConnectionFactory redisConnectionFactory;
 
     @Autowired
@@ -40,7 +43,7 @@ public class TokenStoreConfig {
     @Primary
     public TokenStore tokenStore() {
         if (securityProperties.getTokenStore().isJwtTokenStoreEnable()) {
-            return new JwkTokenStore(""); // 需要补充jwt认证方式
+            return new JwtTokenStore(jwtAccessTokenConverter); // 需要补充jwt认证方式
         } else if (securityProperties.getTokenStore().isRedisTokenStoreEnable()) {
             return new RedisTokenStore(redisConnectionFactory); // redis token 存储方式
         }
