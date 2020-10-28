@@ -17,5 +17,9 @@ public class SecurityProperties {
 
     private TokenStoreProperties tokenStore = new TokenStoreProperties();
 
+    private SmsProperties sms = new SmsProperties();
+
+    private LoginProperties login = new LoginProperties();
+
 }
 

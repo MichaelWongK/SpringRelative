@@ -1,4 +1,4 @@
-package com.micheal.securitycore.properties;
+package com.security.oauth2server.properties;
 
 import lombok.Data;
 

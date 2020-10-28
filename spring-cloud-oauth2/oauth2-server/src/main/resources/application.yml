@@ -35,6 +35,12 @@ mybatis-plus:
   type-aliases-package: com.security.oauth2server.domain
 security:
   tokenStore:
-    jwtTokenStoreEnable: true
-    redisTokenStoreEnable: false
+    jwtTokenStoreEnable: false
+    redisTokenStoreEnable: true
+  login:
+    loginPage: /loginUp.html
+    loginSuccessUrl: /loginSuccess.html
+    loginErrorUrl: /loginError.html
+    loginUrl: /login
+    rememberMeSeconds: 3600
 

@@ -11,4 +11,6 @@ import com.security.oauth2server.domain.TbUser;
 public interface TbUserService extends IService<TbUser> {
 
     TbUser getByUserName(String username);
+
+    TbUser getByUserMobile(String mobile);
 }

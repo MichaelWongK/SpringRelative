@@ -19,4 +19,9 @@ public class TbUserServiceImpl extends ServiceImpl<TbUserMapper, TbUser> impleme
     public TbUser getByUserName(String username) {
         return getOne(new QueryWrapper<TbUser>().eq("username", username));
     }
+
+    @Override
+    public TbUser getByUserMobile(String mobile) {
+        return getOne(new QueryWrapper<TbUser>().eq("phone", mobile));
+    }
 }

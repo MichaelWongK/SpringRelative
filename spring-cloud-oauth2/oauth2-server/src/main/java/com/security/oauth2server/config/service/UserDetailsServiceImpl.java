@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,5 +48,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         // 由框架完成认证工作
         return new User(username, tbUser.getPassword(), grantedAuthorities);
+    }
+
+    public UserDetails loadUserByUserMobile(String mobile) {
+        TbUser tbUser = tbUserService.getByUserMobile(mobile);
+        List<GrantedAuthority> grantedAuthorities = Lists.newArrayList();
+        if (tbUser != null) {
+            List<TbPermission> tbPermissions = tbPermissionService.selectByUserId(tbUser.getId());
+
+            tbPermissions.forEach(tbPermission -> grantedAuthorities.add(new SimpleGrantedAuthority(tbPermission.getEnname())));
+        }
+
+
+        return new User(tbUser.getUsername(), tbUser.getPassword(), grantedAuthorities);
     }
 }
