@@ -1,0 +1,14 @@
+security:
+  oauth2:
+    client:
+      client-id: app-b
+      client-secret: secret
+      user-authorization-uri: http://localhost:8080/oauth2-server/oauth/authorize
+      access-token-uri: http://localhost:8080/oauth2-server/oauth/token
+    resource:
+      jwt:
+        key-uri: http://localhost:8080/oauth2-server/oauth/token_key
+server:
+  port: 9091
+  servlet:
+    context-path: /app2

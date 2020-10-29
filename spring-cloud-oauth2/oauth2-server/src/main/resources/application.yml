@@ -1,3 +1,7 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /oauth2-server
 spring:
   application:
     name: oauth2-server
@@ -28,15 +32,13 @@ spring:
         min-idle: 0
     timeout: 120
     database: 2
-server:
-  port: 8080
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.security.oauth2server.domain
 security:
   tokenStore:
-    jwtTokenStoreEnable: false
-    redisTokenStoreEnable: true
+    jwtTokenStoreEnable: true
+    redisTokenStoreEnable: false
   login:
     loginPage: /loginUp.html
     loginSuccessUrl: /loginSuccess.html

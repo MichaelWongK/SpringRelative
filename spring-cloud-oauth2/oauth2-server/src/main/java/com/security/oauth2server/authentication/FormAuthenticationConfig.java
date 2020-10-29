@@ -55,7 +55,7 @@ public class FormAuthenticationConfig {
                 // 注意3： 这里设置的 Url 是有默认无权限访问的
                 .loginProcessingUrl(securityProperties.getLogin().getLoginUrl())
                 //分别设置成功和失败的处理器
-                .successHandler(myAuthenticationSucessHandler)
+//                .successHandler(myAuthenticationSucessHandler)
                 .failureHandler(myAuthenticationFailureHandler);
 
     }

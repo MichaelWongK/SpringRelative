@@ -18,6 +18,8 @@
 		<module>springboot-dependencies</module>
 		<module>oauth2-server</module>
 		<module>oauth2-resource</module>
+		<module>oauth2-sso-client-one</module>
+		<module>oauth2-sso-client-two</module>
 	</modules>
 
 	<licenses>
