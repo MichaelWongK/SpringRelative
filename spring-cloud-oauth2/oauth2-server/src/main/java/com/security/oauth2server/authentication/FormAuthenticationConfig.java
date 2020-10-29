@@ -1,7 +1,7 @@
 package com.security.oauth2server.authentication;
 
 import com.security.oauth2server.authentication.handler.MyAuthenticationFailureHandler;
-import com.security.oauth2server.authentication.handler.MyAuthenticationSucessHandler;
+import com.security.oauth2server.authentication.handler.MyAuthenticationSuccessHandler;
 import com.security.oauth2server.properties.SecurityProperties;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ public class FormAuthenticationConfig {
     private SecurityProperties securityProperties;
 
     @Resource
-    private MyAuthenticationSucessHandler myAuthenticationSucessHandler;
+    private MyAuthenticationSuccessHandler myAuthenticationSuccessHandler;
 
     @Resource
     private MyAuthenticationFailureHandler myAuthenticationFailureHandler;
@@ -55,7 +55,8 @@ public class FormAuthenticationConfig {
                 // 注意3： 这里设置的 Url 是有默认无权限访问的
                 .loginProcessingUrl(securityProperties.getLogin().getLoginUrl())
                 //分别设置成功和失败的处理器
-//                .successHandler(myAuthenticationSucessHandler)
+                // sso登录此处使用默认successHandler, 如果使用自定义successHandler header解析会有问题
+//                .successHandler(myAuthenticationSuccessHandler)
                 .failureHandler(myAuthenticationFailureHandler);
 
     }

@@ -32,7 +32,7 @@ import java.util.HashMap;
  * 创建逻辑与ouath2的/token/oauth源码的创建逻辑一致，具体可参照
  */
 @Component
-public class MyAuthenticationSucessHandler implements AuthenticationSuccessHandler {
+public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
