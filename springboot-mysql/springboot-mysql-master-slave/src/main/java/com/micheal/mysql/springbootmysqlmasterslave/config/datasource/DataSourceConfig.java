@@ -20,7 +20,7 @@ import java.util.Map;
 public class DataSourceConfig {
 
 
-    // TODO: Durid连接池待补充
+    // TODO: Druid连接池待补充
     @Bean
     @ConfigurationProperties("spring.datasource.master")
     public DataSource masterDataSource() {

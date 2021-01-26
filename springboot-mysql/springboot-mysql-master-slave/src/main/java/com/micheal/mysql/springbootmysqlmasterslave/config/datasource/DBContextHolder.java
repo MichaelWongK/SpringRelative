@@ -15,7 +15,7 @@ public class DBContextHolder {
 
     private static final AtomicInteger counter = new AtomicInteger(-1);
 
-    public static void set(DBTypeEnum dbType) {
+    private static void set(DBTypeEnum dbType) {
         contextHolder.set(dbType);
     }
 
