@@ -11,5 +11,6 @@ public class QueueConstants {
     public static final String RPC_QUEUE1 = "rpc.queue1";
     public static final String RPC_QUEUE2 = "rpc.queue2";
     public static final String RPC_EXCHANGE = "rpc.exchange";
-    public static final String QUEUE_ROUTING_KEY_NAME = "rpc_routing_key";
+    public static final String QUEUE_ROUTING_KEY_NAME_QUEUE1 = "rpc_routing_key_queue1";
+    public static final String QUEUE_ROUTING_KEY_NAME_QUEUE2 = "rpc_routing_key_queue2";
 }

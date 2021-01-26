@@ -12,7 +12,7 @@ spring:
     # ����returnedMessage�ص� Exchange -> Queue # 开启发送失败退回（消息有没有找到合适的队列）
     publisher-returns: true
     # 开启 ACK（消费者接收到消息时手动确认）
-    listener:
-      simple:
-        acknowledge-mode: manual # 手动确认
-        prefetch: 100
+#    listener:
+#      simple:
+#        acknowledge-mode: manual # 手动确认
+#        prefetch: 100
