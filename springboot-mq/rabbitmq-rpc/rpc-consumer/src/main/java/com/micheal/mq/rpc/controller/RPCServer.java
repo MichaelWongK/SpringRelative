@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,18 +26,38 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-public class ConsumerController {
+public class RPCServer {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
     @RabbitListener(queues = {QueueConstants.RPC_QUEUE1})
-    public void handler(Message message, @Headers Map<String, Object> headers) throws IOException {
-        log.info("收到队列1消息：{}", message.toString());
+    public void process(Message message, Channel channel, @Headers Map<String, Object> headers) throws IOException {
+        log.info("Server收到发送的消息：{}", message.toString());
+
+        // 模拟处理业务逻辑
+        try {
+            Thread.sleep(2 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         String msgBody = new String(message.getBody());
-        Message respMsg = converter(msgBody + "返回了", message.getMessageProperties().getCorrelationId());
-        rabbitTemplate.send(QueueConstants.RPC_EXCHANGE, QueueConstants.RPC_QUEUE2, respMsg);
+        String newMessage = msgBody + "，sleep 2000 ms。";
+        Message respMsg = converter(newMessage, message.getMessageProperties().getCorrelationId());
+        CorrelationData correlationData = new CorrelationData(message.getMessageProperties().getCorrelationId());
+//        rabbitTemplate.send(QueueConstants.RPC_EXCHANGE, QueueConstants.RPC_QUEUE2, respMsg, correlationData);
+        rabbitTemplate.convertAndSend(QueueConstants.RPC_EXCHANGE, QueueConstants.RPC_QUEUE2, respMsg, correlationData);
+        Long tag = (Long) headers.get(AmqpHeaders.DELIVERY_TAG);
+
+        try {
+            // 手动确认消息已消费
+            channel.basicAck(tag, false);
+        } catch (IOException e) {
+            // 把消费失败的消息重新放入到队列, 以后可以继续消费
+            channel.basicNack(tag, false, true);
+            e.printStackTrace();
+        }
     }
 
 //    @RabbitListener(queues = {QueueConstants.RPC_QUEUE2})

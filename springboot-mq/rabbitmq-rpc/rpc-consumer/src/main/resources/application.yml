@@ -8,7 +8,7 @@ spring:
     port: 5672
     host: 49.234.52.233
     # ����confirms�ص� P -> Exchange # 开启发送确认
-#    publisher-confirm-type: simple
+    publisher-confirm-type: correlated
     # ����returnedMessage�ص� Exchange -> Queue # 开启发送失败退回（消息有没有找到合适的队列）
     publisher-returns: true
 #    listener:

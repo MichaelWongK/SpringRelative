@@ -29,19 +29,24 @@ public class RabbitConfig {
 
         // 在这里设置返回队列
         rabbitTemplate.setReplyAddress(QueueConstants.RPC_QUEUE2);
-        rabbitTemplate.setReplyTimeout(60000);
+        rabbitTemplate.setReplyTimeout(6000);
         return rabbitTemplate;
     }
 
-    // 设置队列监听器
-    @Bean
-    public SimpleMessageListenerContainer createReplyListenerContainer(ConnectionFactory connectionFactory) {
-        SimpleMessageListenerContainer listenerContainer = new SimpleMessageListenerContainer();
-        listenerContainer.setConnectionFactory(connectionFactory);
-        listenerContainer.setQueueNames(QueueConstants.RPC_QUEUE2);
-        listenerContainer.setMessageListener(rabbitTemplate(connectionFactory));
-        return listenerContainer;
-    }
+    /**
+     * 设置队列监听器
+     * server端 不需要再接收返回消息，所以不需要配置监听返回队列，否则会有等待回调结果超时错误
+     * @param connectionFactory
+     * @return
+     */
+//    @Bean
+//    public SimpleMessageListenerContainer createReplyListenerContainer(ConnectionFactory connectionFactory) {
+//        SimpleMessageListenerContainer listenerContainer = new SimpleMessageListenerContainer();
+//        listenerContainer.setConnectionFactory(connectionFactory);
+//        listenerContainer.setQueueNames(QueueConstants.RPC_QUEUE2);
+//        listenerContainer.setMessageListener(rabbitTemplate(connectionFactory));
+//        return listenerContainer;
+//    }
 
 
     /**
