@@ -1,0 +1,21 @@
+seata:
+   enabled: true
+   application-id: client
+   tx-service-group: test
+   config:
+      type: nacos
+      nacos:
+         namespace: 6c990727-93b2-4081-a8c6-6b015c56eda2
+         serverAddr: 127.0.0.1:8848
+         group: SEATA_GROUP
+         username: "nacos"
+         password: "nacos"
+   registry:
+      type: nacos
+      nacos:
+         application: seata-server
+         serverAddr: 127.0.0.1:8848
+         group: SEATA_GROUP
+         namespace: 6c990727-93b2-4081-a8c6-6b015c56eda2
+         username: "nacos"
+         password: "nacos"
