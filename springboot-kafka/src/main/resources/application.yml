@@ -1,0 +1,13 @@
+server:
+  port: 9100
+spring:
+  kafka:
+    # 指定 kafka 地址
+    bootstrap-servers: micheal.wang:9092
+    consumer:
+      # 指定 group_id
+      group-id: group_micheal
+      auto-offset-reset: earliest
+      # 指定消息key和消息体的编解码方式
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
